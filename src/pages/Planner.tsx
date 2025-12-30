@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { addDays, addWeeks, format, startOfWeek } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Recipe } from '@/lib/types';
+import { Recipe, PlannerMeal } from '@/lib/types';
 import { Plus, Search, X, ChevronLeft, ChevronRight, Calendar as CalendarIcon, ShoppingCart } from 'lucide-react';
 import { useShoppingCart, getWeekId } from '@/contexts/ShoppingCartContext';
 import { useMealPlanner } from '@/contexts/MealPlannerContext';
@@ -11,7 +11,7 @@ import { Link } from 'react-router-dom';
 export default function Planner() {
     const [weekOffset, setWeekOffset] = useState(0); // 0 = current week, -1 = last week, +1 = next week
     const { addMultipleToCart } = useShoppingCart();
-    const { plannedMeals, addRecipeToDate, removeRecipeFromDate } = useMealPlanner();
+    const { plannedMeals, addRecipeToDate, addCustomMealToDate, removeRecipeFromDate } = useMealPlanner();
     const { recipes, loading, error } = useRecipes();
 
     const today = new Date();
@@ -59,8 +59,10 @@ export default function Planner() {
         // Collect all unique recipes for this week
         weekDays.forEach(day => {
             const dateStr = format(day, 'yyyy-MM-dd');
-            const meals = plannedMeals[dateStr] || [];
-            meals.forEach(recipe => allRecipesThisWeek.add(recipe));
+            const meals: PlannerMeal[] = plannedMeals[dateStr] || [];
+            meals.forEach(meal => {
+                if (meal.recipe) allRecipesThisWeek.add(meal.recipe);
+            });
         });
 
         // Collect all items to add
@@ -203,21 +205,32 @@ export default function Planner() {
                                                 key={`${meal.id}-${idx}`}
                                                 className="group relative"
                                             >
-                                                <Link
-                                                    to={`/recipe/${meal.id}`}
-                                                    className="block bg-white p-2 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md hover:border-primary-200 transition-all cursor-pointer"
-                                                >
-                                                    <div className="aspect-video w-full rounded-xl overflow-hidden bg-gray-100 mb-2 shadow-sm border border-gray-50">
-                                                        {meal.image_url ? (
-                                                            <img src={meal.image_url} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="" />
-                                                        ) : (
-                                                            <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs font-bold">
-                                                                {meal.title.substring(0, 2).toUpperCase()}
+                                                {meal.recipe ? (
+                                                    <Link
+                                                        to={`/recipe/${meal.id}`}
+                                                        className="block bg-white p-2 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md hover:border-primary-200 transition-all cursor-pointer"
+                                                    >
+                                                        <div className="aspect-video w-full rounded-xl overflow-hidden bg-gray-100 mb-2 shadow-sm border border-gray-50">
+                                                            {meal.image_url ? (
+                                                                <img src={meal.image_url} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="" />
+                                                            ) : (
+                                                                <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs font-bold">
+                                                                    {meal.title.substring(0, 2).toUpperCase()}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <p className="font-bold text-xs text-gray-900 leading-tight line-clamp-2 px-1 mb-1">{meal.title}</p>
+                                                    </Link>
+                                                ) : (
+                                                    <div className="block bg-primary-50 p-4 rounded-2xl shadow-sm border border-primary-100 hover:shadow-md hover:border-primary-200 transition-all border-dashed">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-8 h-8 rounded-lg bg-primary-100 flex items-center justify-center text-primary-600 flex-shrink-0">
+                                                                <CalendarIcon size={14} />
                                                             </div>
-                                                        )}
+                                                            <p className="font-bold text-sm text-primary-900 leading-tight line-clamp-2">{meal.title}</p>
+                                                        </div>
                                                     </div>
-                                                    <p className="font-bold text-xs text-gray-900 leading-tight line-clamp-2 px-1 mb-1">{meal.title}</p>
-                                                </Link>
+                                                )}
 
                                                 <button
                                                     onClick={(e) => {
@@ -285,11 +298,31 @@ export default function Planner() {
                             </div>
 
                             <div className="overflow-y-auto p-6 flex-1 custom-scrollbar">
+                                {searchQuery.trim().length > 0 && (
+                                    <button
+                                        onClick={() => {
+                                            if (searchDate) {
+                                                addCustomMealToDate(searchQuery, searchDate);
+                                                setIsSearchOpen(false);
+                                            }
+                                        }}
+                                        className="mb-8 w-full flex items-center gap-4 p-4 bg-primary-50 rounded-[1.5rem] border-2 border-dashed border-primary-200 hover:bg-primary-100 transition-all text-left"
+                                    >
+                                        <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center text-primary-600 shadow-sm border border-primary-100">
+                                            <Plus size={28} />
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-primary-600 mb-1">Custom Entry</p>
+                                            <h4 className="font-bold text-xl text-gray-900">Add "{searchQuery}"</h4>
+                                        </div>
+                                    </button>
+                                )}
+
                                 {filteredRecipes.length === 0 ? (
-                                    <div className="text-center py-20">
-                                        <span className="text-6xl mb-6 block">🔍</span>
-                                        <h3 className="text-xl font-bold text-gray-900">No recipes found</h3>
-                                        <p className="text-gray-500 max-w-xs mx-auto mt-2">Try different keywords or check your saved collection.</p>
+                                    <div className="text-center py-10">
+                                        <span className="text-4xl mb-4 block">🔍</span>
+                                        <h3 className="text-lg font-bold text-gray-900">No matching recipes</h3>
+                                        <p className="text-sm text-gray-500 max-w-[200px] mx-auto mt-1">Add it as a custom entry above!</p>
                                     </div>
                                 ) : (
                                     <div className="grid grid-cols-1 gap-4">

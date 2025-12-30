@@ -333,35 +333,37 @@ export default function ShoppingCart() {
 
                                 {/* Manual Add Form */}
                                 {selectedWeek === weekId && (
-                                    <div className="bg-gradient-to-br from-primary-50 to-white rounded-[2rem] p-6 border-2 border-dashed border-primary-200 mb-4">
-                                        <h3 className="text-sm font-black uppercase tracking-wider text-primary-700 mb-4">Add Manual Item</h3>
-                                        <div className="flex flex-wrap gap-3">
+                                    <div className="bg-gradient-to-br from-primary-50 to-white rounded-[1.5rem] p-4 border-2 border-dashed border-primary-200 mb-3 md:max-w-lg">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <h3 className="text-[10px] font-black uppercase tracking-wider text-primary-700">Add Manual Item</h3>
+                                        </div>
+                                        <div className="flex flex-wrap gap-2">
                                             <input
                                                 type="text"
                                                 placeholder="Item name"
                                                 value={manualItemName}
                                                 onChange={(e) => setManualItemName(e.target.value)}
-                                                className="flex-1 min-w-[200px] px-4 py-2 rounded-xl border-2 border-primary-200 focus:border-primary-400 focus:ring-0 font-semibold"
+                                                className="flex-1 min-w-[150px] px-3 py-1.5 rounded-xl border border-primary-100 focus:border-primary-400 focus:ring-0 font-bold text-xs"
                                             />
                                             <input
                                                 type="number"
-                                                placeholder="Amount"
+                                                placeholder="Q"
                                                 value={manualItemAmount}
                                                 onChange={(e) => setManualItemAmount(e.target.value)}
-                                                className="w-24 px-4 py-2 rounded-xl border-2 border-primary-200 focus:border-primary-400 focus:ring-0 font-semibold"
+                                                className="w-16 px-2 py-1.5 rounded-xl border border-primary-100 focus:border-primary-400 focus:ring-0 font-bold text-xs text-center"
                                             />
                                             <input
                                                 type="text"
                                                 placeholder="Unit"
                                                 value={manualItemUnit}
                                                 onChange={(e) => setManualItemUnit(e.target.value)}
-                                                className="w-24 px-4 py-2 rounded-xl border-2 border-primary-200 focus:border-primary-400 focus:ring-0 font-semibold"
+                                                className="w-16 px-2 py-1.5 rounded-xl border border-primary-100 focus:border-primary-400 focus:ring-0 font-bold text-xs text-center"
                                             />
                                             <button
                                                 onClick={handleAddManualItem}
-                                                className="px-6 py-2 bg-primary-600 text-white rounded-xl font-bold hover:bg-primary-700 transition-colors"
+                                                className="px-4 py-1.5 bg-primary-600 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-primary-700 transition-colors whitespace-nowrap"
                                             >
-                                                Add Item
+                                                Add
                                             </button>
                                         </div>
                                     </div>
@@ -372,60 +374,52 @@ export default function ShoppingCart() {
                                         <motion.div
                                             key={item.id}
                                             layout
-                                            className={`flex items-center gap-4 p-5 hover:bg-gray-50/50 transition-colors ${item.checked ? 'opacity-40' : ''
+                                            className={`flex items-center gap-3 p-2.5 hover:bg-gray-50/50 transition-colors ${item.checked ? 'opacity-40' : ''
                                                 }`}
                                         >
                                             <button
                                                 onClick={() => toggleChecked(item.id)}
-                                                className={`flex-shrink-0 w-7 h-7 rounded-xl border-2 flex items-center justify-center transition-all ${item.checked
+                                                className={`flex-shrink-0 w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${item.checked
                                                     ? 'bg-primary-500 border-primary-500 shadow-lg shadow-primary-100'
                                                     : 'border-gray-200 hover:border-primary-400 bg-white'
                                                     }`}
                                             >
-                                                {item.checked && <Check size={18} className="text-white" strokeWidth={4} />}
+                                                {item.checked && <Check size={16} className="text-white" strokeWidth={4} />}
                                             </button>
 
                                             <div className="flex-1 min-w-0">
-                                                <p className={`text-base font-bold truncate ${item.checked ? 'line-through text-gray-400' : 'text-gray-900'}`}>
+                                                <p className={`text-sm font-bold truncate ${item.checked ? 'line-through text-gray-400' : 'text-gray-900'}`}>
                                                     {item.name}
                                                 </p>
-                                                <div className="flex flex-wrap gap-1.5 mt-1.5">
+                                                <div className="flex flex-wrap gap-1 mt-0.5">
                                                     {item.recipeNames.map((name: string, idx: number) => (
-                                                        <span key={idx} className="text-[10px] px-2 py-0.5 bg-gray-50 text-gray-400 rounded-lg font-black uppercase tracking-tighter border border-gray-100">
+                                                        <span key={idx} className="text-[9px] px-1.5 py-0.5 bg-gray-50 text-gray-400 rounded-lg font-black uppercase tracking-tighter border border-gray-100">
                                                             {name}
                                                         </span>
                                                     ))}
                                                     {item.recipeNames.length === 0 && (
-                                                        <span className="text-[10px] px-2 py-0.5 bg-blue-50 text-blue-500 rounded-lg font-black uppercase tracking-tighter border border-blue-100">
+                                                        <span className="text-[9px] px-1.5 py-0.5 bg-blue-50 text-blue-500 rounded-lg font-black uppercase tracking-tighter border border-blue-100">
                                                             Manual
                                                         </span>
                                                     )}
                                                 </div>
-                                                {/* Note Input */}
-                                                <input
-                                                    type="text"
-                                                    placeholder="Add a note..."
-                                                    value={item.note || ''}
-                                                    onChange={(e) => updateNote(item.id, e.target.value)}
-                                                    className="mt-2 w-full px-3 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:border-primary-300 focus:ring-0 text-gray-600 placeholder-gray-400"
-                                                />
                                             </div>
 
-                                            <div className="flex items-center gap-3">
-                                                <div className="flex items-center bg-gray-50 rounded-xl p-1 border border-gray-100">
+                                            <div className="flex items-center gap-2">
+                                                <div className="flex items-center bg-gray-50 rounded-xl p-0.5 border border-gray-100">
                                                     <input
                                                         type="number"
                                                         min="0"
                                                         value={item.amount}
                                                         onChange={(e) => updateQuantity(item.id, parseFloat(e.target.value) || 0)}
-                                                        className="w-16 px-2 py-1 text-sm font-black text-gray-900 bg-transparent border-none focus:ring-0 text-center"
+                                                        className="w-12 px-1 py-1 text-xs font-black text-gray-900 bg-transparent border-none focus:ring-0 text-center"
                                                     />
-                                                    <span className="text-[10px] font-black uppercase text-gray-400 pr-2 border-l border-gray-200 pl-2 ml-1">{item.unit}</span>
+                                                    <span className="text-[9px] font-black uppercase text-gray-400 pr-1.5 border-l border-gray-200 pl-1.5 ml-0.5">{item.unit}</span>
                                                 </div>
 
-                                                <div className="flex items-center bg-gray-50 rounded-xl p-1 border border-gray-100">
-                                                    <div className="pl-2 pr-1 text-gray-400">
-                                                        <DollarSign size={14} strokeWidth={3} />
+                                                <div className="flex items-center bg-gray-50 rounded-xl p-0.5 border border-gray-100">
+                                                    <div className="pl-1.5 pr-0.5 text-gray-400">
+                                                        <DollarSign size={12} strokeWidth={3} />
                                                     </div>
                                                     <input
                                                         type="number"
@@ -434,15 +428,26 @@ export default function ShoppingCart() {
                                                         placeholder="0.00"
                                                         value={item.price || ''}
                                                         onChange={(e) => updatePrice(item.id, parseFloat(e.target.value) || 0)}
-                                                        className="w-20 px-2 py-1 text-sm font-black text-gray-900 bg-transparent border-none focus:ring-0"
+                                                        className="w-16 px-1 py-1 text-xs font-black text-gray-900 bg-transparent border-none focus:ring-0"
+                                                    />
+                                                </div>
+
+                                                {/* Note Input - Moved far right */}
+                                                <div className="hidden sm:block">
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Note..."
+                                                        value={item.note || ''}
+                                                        onChange={(e) => updateNote(item.id, e.target.value)}
+                                                        className="w-32 px-3 py-1.5 text-xs bg-gray-50 border border-gray-100 rounded-xl focus:bg-white focus:border-primary-300 focus:ring-0 text-gray-600 placeholder-gray-300 transition-all text-right"
                                                     />
                                                 </div>
 
                                                 <button
                                                     onClick={() => removeFromCart(item.id)}
-                                                    className="flex-shrink-0 p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                                                    className="flex-shrink-0 p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
                                                 >
-                                                    <X size={20} />
+                                                    <X size={18} />
                                                 </button>
                                             </div>
                                         </motion.div>

@@ -36,5 +36,15 @@ export interface RecipeIngredient {
 export interface MealPlanEntry {
     id: number;
     date: string; // Database date string YYYY-MM-DD
-    recipe: Recipe;
+    recipe?: Recipe;
+    custom_title?: string | null;
 }
+
+export type PlannerMeal = {
+    id: string | number;
+    title: string;
+    image_url?: string;
+    isCustom?: boolean;
+    recipe?: Recipe;
+    custom_title?: string;
+};

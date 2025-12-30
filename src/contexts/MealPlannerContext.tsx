@@ -1,10 +1,11 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Recipe } from '@/lib/types';
+import { Recipe, PlannerMeal } from '@/lib/types';
 import { supabase } from '@/lib/supabase';
 
 interface MealPlannerContextType {
-    plannedMeals: Record<string, Recipe[]>;
+    plannedMeals: Record<string, PlannerMeal[]>;
     addRecipeToDate: (recipe: Recipe, dateStr: string) => void;
+    addCustomMealToDate: (title: string, dateStr: string) => void;
     removeRecipeFromDate: (dateStr: string, index: number) => void;
     loading: boolean;
 }
@@ -12,7 +13,7 @@ interface MealPlannerContextType {
 const MealPlannerContext = createContext<MealPlannerContextType | undefined>(undefined);
 
 export const MealPlannerProvider = ({ children }: { children: ReactNode }) => {
-    const [plannedMeals, setPlannedMeals] = useState<Record<string, Recipe[]>>({});
+    const [plannedMeals, setPlannedMeals] = useState<Record<string, PlannerMeal[]>>({});
     const [loading, setLoading] = useState(true);
 
     // Load from Supabase on mount or auth change
@@ -28,30 +29,43 @@ export const MealPlannerProvider = ({ children }: { children: ReactNode }) => {
             const { data, error } = await supabase
                 .from('meal_planner')
                 .select('*, recipes(*, categories(*), recipe_ingredients(*, ingredients(*)), recipe_tags(*, tags(*)))')
-                .eq('user_id', user.id);
+                .eq('user_id', user.id)
+                .order('id', { ascending: true });
 
             if (error) {
                 console.error('Error fetching meal plan:', error);
             } else if (data) {
-                const grouped: Record<string, Recipe[]> = {};
+                const grouped: Record<string, PlannerMeal[]> = {};
                 data.forEach((item: any) => {
                     const date = item.date;
                     if (!grouped[date]) grouped[date] = [];
 
-                    // Transform database recipe object to match UI Recipe interface
-                    const rawRecipe = item.recipes;
-                    const recipe: Recipe = {
-                        ...rawRecipe,
-                        ingredients: rawRecipe.recipe_ingredients.map((ri: any) => ({
-                            ingredient: ri.ingredients,
-                            amount_in_grams: ri.amount_in_grams,
-                            unit: ri.unit
-                        })),
-                        category: rawRecipe.categories,
-                        tags: rawRecipe.recipe_tags.map((rt: any) => rt.tags)
-                    };
+                    if (item.custom_title) {
+                        grouped[date].push({
+                            id: item.id,
+                            title: item.custom_title,
+                            isCustom: true
+                        });
+                    } else if (item.recipes) {
+                        const rawRecipe = item.recipes;
+                        const recipe: Recipe = {
+                            ...rawRecipe,
+                            ingredients: rawRecipe.recipe_ingredients.map((ri: any) => ({
+                                ingredient: ri.ingredients,
+                                amount_in_grams: ri.amount_in_grams,
+                                unit: ri.unit
+                            })),
+                            category: rawRecipe.categories,
+                            tags: rawRecipe.recipe_tags.map((rt: any) => rt.tags)
+                        };
 
-                    grouped[date].push(recipe);
+                        grouped[date].push({
+                            id: recipe.id,
+                            title: recipe.title,
+                            image_url: recipe.image_url || undefined,
+                            recipe: recipe
+                        });
+                    }
                 });
                 setPlannedMeals(grouped);
             }
@@ -74,7 +88,12 @@ export const MealPlannerProvider = ({ children }: { children: ReactNode }) => {
         // Optimistic update
         setPlannedMeals(prev => ({
             ...prev,
-            [dateStr]: [...(prev[dateStr] || []), recipe]
+            [dateStr]: [...(prev[dateStr] || []), {
+                id: recipe.id,
+                title: recipe.title,
+                image_url: recipe.image_url || undefined,
+                recipe: recipe
+            }]
         }));
 
         const { error } = await supabase
@@ -87,7 +106,34 @@ export const MealPlannerProvider = ({ children }: { children: ReactNode }) => {
 
         if (error) {
             console.error('Error saving meal to planner:', error);
-            // Revert on error? Or just log.
+        }
+    };
+
+    const addCustomMealToDate = async (title: string, dateStr: string) => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        // Optimistic update
+        const tempId = Date.now();
+        setPlannedMeals(prev => ({
+            ...prev,
+            [dateStr]: [...(prev[dateStr] || []), {
+                id: tempId,
+                title: title,
+                isCustom: true
+            }]
+        }));
+
+        const { error } = await supabase
+            .from('meal_planner')
+            .insert({
+                user_id: user.id,
+                custom_title: title,
+                date: dateStr
+            });
+
+        if (error) {
+            console.error('Error saving custom meal to planner:', error);
         }
     };
 
@@ -107,17 +153,22 @@ export const MealPlannerProvider = ({ children }: { children: ReactNode }) => {
             };
         });
 
-        // Delete from DB. Note: Since we don't have the specific ID of the row easily, 
-        // we delete by date and recipe_id. If there are duplicates, this might delete both.
-        // But the unique constraint in SQL is (user_id, recipe_id, date), so there's only one.
+        // Delete from DB
+        const matchCriteria: any = {
+            user_id: user.id,
+            date: dateStr
+        };
+
+        if (recipeToRemove.isCustom) {
+            matchCriteria.custom_title = recipeToRemove.title;
+        } else {
+            matchCriteria.recipe_id = recipeToRemove.id;
+        }
+
         const { error } = await supabase
             .from('meal_planner')
             .delete()
-            .match({
-                user_id: user.id,
-                recipe_id: recipeToRemove.id,
-                date: dateStr
-            });
+            .match(matchCriteria);
 
         if (error) {
             console.error('Error removing meal from planner:', error);
@@ -125,7 +176,7 @@ export const MealPlannerProvider = ({ children }: { children: ReactNode }) => {
     };
 
     return (
-        <MealPlannerContext.Provider value={{ plannedMeals, addRecipeToDate, removeRecipeFromDate, loading }}>
+        <MealPlannerContext.Provider value={{ plannedMeals, addRecipeToDate, addCustomMealToDate, removeRecipeFromDate, loading }}>
             {children}
         </MealPlannerContext.Provider>
     );

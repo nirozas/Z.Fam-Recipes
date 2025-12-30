@@ -612,7 +612,11 @@ export default function CreateRecipe() {
               </div>
             </section>
 
-            {/* Section 5: Ingredients - Full Width in Left Column */}
+          </div>
+
+          {/* RIGHT COLUMN */}
+          <div className="space-y-8">
+            {/* Section 5: Ingredients */}
             <section className="bg-white p-6 sm:p-8 rounded-[2.5rem] shadow-xl shadow-gray-100 border border-gray-100 space-y-6">
               <div className="flex items-center justify-between border-b border-gray-50 pb-6">
                 <div className="flex items-center gap-4">
@@ -670,10 +674,6 @@ export default function CreateRecipe() {
                 ))}
               </div>
             </section>
-          </div>
-
-          {/* RIGHT COLUMN */}
-          <div className="space-y-8">
             {/* Section 4: Advanced Instructions */}
             <section className="bg-white p-6 sm:p-8 rounded-[2.5rem] shadow-xl shadow-gray-100 border border-gray-100 space-y-8">
               <div className="flex items-center justify-between">
@@ -752,7 +752,7 @@ export default function CreateRecipe() {
                         </div>
                       </div>
 
-                      <div className="w-full md:w-48 flex-shrink-0">
+                      <div className="w-full md:w-28 flex-shrink-0">
                         <div className="relative aspect-square rounded-2xl bg-white border-2 border-dashed border-gray-200 flex flex-col items-center justify-center overflow-hidden group/img transition-all hover:border-primary-200">
                           {step.image_url ? (
                             <>
