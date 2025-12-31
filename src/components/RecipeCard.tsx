@@ -92,8 +92,8 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
                         <button
                             onClick={handleToggleFavorite}
                             className={`p-2 rounded-full backdrop-blur-md transition-all duration-300 shadow-sm border ${isFavorited
-                                    ? 'bg-amber-500 text-white border-amber-400'
-                                    : 'bg-white/90 text-gray-400 border-gray-100 hover:bg-white hover:text-amber-500'
+                                ? 'bg-amber-500 text-white border-amber-400'
+                                : 'bg-white/90 text-gray-400 border-gray-100 hover:bg-white hover:text-amber-500'
                                 }`}
                             title={isFavorited ? "Remove from favorites" : "Favorite this recipe"}
                         >
@@ -130,7 +130,7 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
                         </div>
                     </div>
 
-                    <h3 className="font-bold text-lg text-gray-900 mb-1 line-clamp-1 group-hover:text-primary-600 transition-colors">
+                    <h3 className="font-bold text-sm md:text-lg text-gray-900 mb-1 line-clamp-none md:line-clamp-1 group-hover:text-primary-600 transition-colors">
                         {recipe.title}
                     </h3>
 
