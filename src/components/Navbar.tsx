@@ -1,4 +1,4 @@
-import { Search, Calendar, LogIn, LogOut, ShoppingCart, TrendingUp, ChevronDown, Utensils, Heart, Star, LayoutGrid, Settings as SettingsIcon } from 'lucide-react';
+import { Search, Calendar, LogIn, LogOut, ShoppingCart, TrendingUp, ChevronDown, Utensils, Heart, Star, LayoutGrid } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
@@ -11,7 +11,6 @@ export default function Navbar() {
     const navigate = useNavigate();
     const [session, setSession] = useState<Session | null>(null);
     const [profileUsername, setProfileUsername] = useState<string | null>(null);
-    const [userRole, setUserRole] = useState<string | null>(null);
     const { cartCount } = useShoppingCart();
     const [isLogoDropdownOpen, setIsLogoDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -29,7 +28,6 @@ export default function Navbar() {
             if (session?.user) fetchProfile(session.user.id);
             else {
                 setProfileUsername(null);
-                setUserRole(null);
             }
         });
 
@@ -54,7 +52,6 @@ export default function Navbar() {
             .single();
         if (data) {
             setProfileUsername(data.username);
-            setUserRole(data.role);
         }
     };
 
@@ -69,8 +66,7 @@ export default function Navbar() {
         { label: 'All Recipes', icon: Utensils, path: '/search', color: 'text-primary-600', bg: 'bg-primary-50' },
         { label: 'My Favorites', icon: Star, path: '/activity?type=favorites', color: 'text-amber-500', bg: 'bg-amber-50' },
         { label: 'Liked Recipes', icon: Heart, path: '/activity?type=likes', color: 'text-rose-500', bg: 'bg-rose-50' },
-        { label: 'View Categories', icon: LayoutGrid, path: '/categories', color: 'text-blue-500', bg: 'bg-blue-50' },
-        ...(userRole === 'admin' ? [{ label: 'Edit Categories', icon: SettingsIcon, path: '/admin/categories', color: 'text-purple-500', bg: 'bg-purple-50' }] : []),
+        { label: 'Edit Categories', icon: LayoutGrid, path: '/admin/categories', color: 'text-blue-500', bg: 'bg-blue-50' },
     ];
 
     return (

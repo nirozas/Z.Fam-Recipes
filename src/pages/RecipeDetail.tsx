@@ -351,7 +351,7 @@ export default function RecipeDetail() {
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="max-w-4xl relative z-10 pt-32 sm:pt-40"
+                        className="max-w-4xl relative z-10 pt-44 sm:pt-56 md:pt-64 lg:pt-40"
                     >
                         <div className="flex flex-wrap items-center gap-4 mb-4 sm:hidden">
                             <Link
