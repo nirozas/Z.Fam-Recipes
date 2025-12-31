@@ -300,7 +300,7 @@ export default function RecipeDetail() {
             </AnimatePresence>
 
             {/* Hero Section */}
-            <div className="relative h-[40vh] md:h-[60vh] w-full overflow-hidden">
+            <div className="relative h-[50vh] md:h-[65vh] w-full overflow-hidden">
                 {recipe.image_url ? (
                     <img
                         src={recipe.image_url}
@@ -313,23 +313,56 @@ export default function RecipeDetail() {
                         <span className="text-6xl">🍽️</span>
                     </div>
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-6 sm:p-10">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-end p-6 sm:p-10">
                     <Link to="/" className="absolute top-6 left-6 p-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/30 transition-colors z-10">
                         <ArrowLeft size={24} />
                     </Link>
 
+                    <div className="absolute top-6 right-6 flex items-center gap-2 z-10">
+                        <div className="hidden sm:flex items-center gap-2">
+                            <Link
+                                to={`/category/${recipe.category?.slug || 'uncategorized'}`}
+                                className="px-4 py-1.5 bg-primary-500 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-full hover:bg-primary-600 transition-colors shadow-lg shadow-black/20"
+                            >
+                                {recipe.category?.name || 'Uncategorized'}
+                            </Link>
+                        </div>
+
+                        {(isOwner || false) && (
+                            <div className="flex gap-2 print:hidden">
+                                <Link
+                                    to={`/edit/${recipe ? recipe.id : ''}`}
+                                    className="bg-white/20 backdrop-blur-md p-2 rounded-xl hover:bg-white/30 transition-colors text-white border border-white/10 shadow-lg"
+                                    title="Edit Recipe"
+                                >
+                                    <Pencil size={20} />
+                                </Link>
+                                <button
+                                    onClick={() => setShowDeleteConfirm(true)}
+                                    className="bg-red-500/20 backdrop-blur-md p-2 rounded-xl hover:bg-red-500/40 transition-colors text-white border border-white/10 shadow-lg"
+                                    title="Delete Recipe"
+                                >
+                                    <Trash2 size={20} />
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="max-w-4xl relative z-10"
+                        className="max-w-4xl relative z-10 pt-32 sm:pt-40"
                     >
-                        <div className="flex flex-wrap items-center gap-4 mb-4">
-                            <span className="px-4 py-1.5 bg-primary-500 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-full">
+                        <div className="flex flex-wrap items-center gap-4 mb-4 sm:hidden">
+                            <Link
+                                to={`/category/${recipe.category?.slug || 'uncategorized'}`}
+                                className="px-3 py-1 bg-primary-500 text-white text-[9px] font-black uppercase tracking-[0.1em] rounded-full shadow-lg"
+                            >
                                 {recipe.category?.name || 'Uncategorized'}
-                            </span>
+                            </Link>
                         </div>
 
-                        <h1 className="text-4xl sm:text-5xl md:text-7xl font-black text-white mb-2 shadow-sm tracking-tighter leading-[0.9]">
+                        <h1 className="text-3xl sm:text-5xl md:text-7xl font-black text-white mb-2 shadow-sm tracking-tight sm:tracking-tighter leading-[1.1] sm:leading-[0.9]">
                             {recipe.title}
                         </h1>
                         <p className="text-white/80 text-xl font-medium line-clamp-2 mb-8 max-w-2xl leading-relaxed">
@@ -377,9 +410,9 @@ export default function RecipeDetail() {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
-                        className="flex items-end justify-between gap-8 text-white font-black uppercase tracking-widest text-[10px] flex-wrap mt-10 w-full relative z-10"
+                        className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 sm:gap-8 text-white font-black uppercase tracking-widest text-[10px] w-full relative z-10 mt-6 sm:mt-10"
                     >
-                        <div className="flex items-center gap-8 flex-wrap">
+                        <div className="flex items-center gap-6 sm:gap-8 flex-wrap">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-white/10 rounded-xl"><Clock size={16} /></div>
                                 <span>{recipe.time_minutes} min total</span>
@@ -394,7 +427,7 @@ export default function RecipeDetail() {
                             </div>
                         </div>
 
-                        <div className="flex flex-wrap gap-2 print:hidden mb-1">
+                        <div className="flex flex-wrap gap-2 print:hidden w-full sm:w-auto justify-start sm:justify-end">
                             <button
                                 onClick={handleShare}
                                 className="bg-white/20 backdrop-blur-sm p-2 sm:px-3 sm:py-1.5 rounded-xl hover:bg-white/30 transition-colors text-[10px] font-black uppercase tracking-widest flex items-center gap-2 text-white border border-white/10 shadow-sm"
@@ -435,25 +468,6 @@ export default function RecipeDetail() {
                                 <Printer size={14} />
                                 <span className="hidden sm:inline">Print</span>
                             </button>
-                            {(isOwner || false) && (
-                                <>
-                                    <Link
-                                        to={`/edit/${recipe ? recipe.id : ''}`}
-                                        className="bg-white/20 backdrop-blur-sm p-2 sm:px-3 sm:py-1.5 rounded-xl hover:bg-white/30 transition-colors text-[10px] font-black uppercase tracking-widest flex items-center gap-2 text-white border border-white/10 shadow-sm"
-                                    >
-                                        <Pencil size={14} />
-                                        <span className="hidden sm:inline">Edit</span>
-                                    </Link>
-                                    <button
-                                        onClick={() => setShowDeleteConfirm(true)}
-                                        className="bg-red-500/20 backdrop-blur-sm p-2 sm:px-3 sm:py-1.5 rounded-xl hover:bg-red-500/40 transition-colors text-[10px] font-black uppercase tracking-widest flex items-center gap-2 text-white border border-white/10 shadow-sm"
-                                        title="Delete"
-                                    >
-                                        <Trash2 size={14} />
-                                        <span className="hidden sm:inline">Delete</span>
-                                    </button>
-                                </>
-                            )}
                         </div>
                     </motion.div>
                 </div>

@@ -403,6 +403,17 @@ export default function ShoppingCart() {
                                                         </span>
                                                     )}
                                                 </div>
+
+                                                {/* Note Input - Visible on mobile below the name */}
+                                                <div className="mt-2">
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Add note..."
+                                                        value={item.note || ''}
+                                                        onChange={(e) => updateNote(item.id, e.target.value)}
+                                                        className="w-full sm:w-64 px-2 py-1 text-[11px] bg-transparent border-b border-transparent hover:border-gray-100 focus:border-primary-200 focus:bg-primary-50/30 rounded transition-all text-gray-500 italic"
+                                                    />
+                                                </div>
                                             </div>
 
                                             <div className="flex items-center gap-2">
@@ -429,17 +440,6 @@ export default function ShoppingCart() {
                                                         value={item.price || ''}
                                                         onChange={(e) => updatePrice(item.id, parseFloat(e.target.value) || 0)}
                                                         className="w-16 px-1 py-1 text-xs font-black text-gray-900 bg-transparent border-none focus:ring-0"
-                                                    />
-                                                </div>
-
-                                                {/* Note Input - Moved far right */}
-                                                <div className="hidden sm:block">
-                                                    <input
-                                                        type="text"
-                                                        placeholder="Note..."
-                                                        value={item.note || ''}
-                                                        onChange={(e) => updateNote(item.id, e.target.value)}
-                                                        className="w-32 px-3 py-1.5 text-xs bg-gray-50 border border-gray-100 rounded-xl focus:bg-white focus:border-primary-300 focus:ring-0 text-gray-600 placeholder-gray-300 transition-all text-right"
                                                     />
                                                 </div>
 

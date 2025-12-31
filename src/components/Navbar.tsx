@@ -1,16 +1,20 @@
-import { Search, Calendar, LogIn, LogOut, ShoppingCart, TrendingUp } from 'lucide-react';
+import { Search, Calendar, LogIn, LogOut, ShoppingCart, TrendingUp, ChevronDown, Utensils, Heart, Star, LayoutGrid, Settings as SettingsIcon } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Session } from '@supabase/supabase-js';
 import { useShoppingCart } from '@/contexts/ShoppingCartContext';
 import { clsx } from 'clsx';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Navbar() {
     const navigate = useNavigate();
     const [session, setSession] = useState<Session | null>(null);
     const [profileUsername, setProfileUsername] = useState<string | null>(null);
+    const [userRole, setUserRole] = useState<string | null>(null);
     const { cartCount } = useShoppingCart();
+    const [isLogoDropdownOpen, setIsLogoDropdownOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         supabase.auth.getSession().then(({ data: { session } }) => {
@@ -23,19 +27,35 @@ export default function Navbar() {
         } = supabase.auth.onAuthStateChange((_event, session) => {
             setSession(session);
             if (session?.user) fetchProfile(session.user.id);
-            else setProfileUsername(null);
+            else {
+                setProfileUsername(null);
+                setUserRole(null);
+            }
         });
 
-        return () => subscription.unsubscribe();
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsLogoDropdownOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            subscription.unsubscribe();
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
     }, []);
 
     const fetchProfile = async (userId: string) => {
         const { data } = await supabase
             .from('profiles')
-            .select('username')
+            .select('username, role')
             .eq('id', userId)
             .single();
-        if (data) setProfileUsername(data.username);
+        if (data) {
+            setProfileUsername(data.username);
+            setUserRole(data.role);
+        }
     };
 
     const handleSignOut = async () => {
@@ -45,23 +65,82 @@ export default function Navbar() {
 
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
 
+    const dropdownMenu = [
+        { label: 'All Recipes', icon: Utensils, path: '/search', color: 'text-primary-600', bg: 'bg-primary-50' },
+        { label: 'My Favorites', icon: Star, path: '/activity?type=favorites', color: 'text-amber-500', bg: 'bg-amber-50' },
+        { label: 'Liked Recipes', icon: Heart, path: '/activity?type=likes', color: 'text-rose-500', bg: 'bg-rose-50' },
+        { label: 'View Categories', icon: LayoutGrid, path: '/categories', color: 'text-blue-500', bg: 'bg-blue-50' },
+        ...(userRole === 'admin' ? [{ label: 'Edit Categories', icon: SettingsIcon, path: '/admin/categories', color: 'text-purple-500', bg: 'bg-purple-50' }] : []),
+    ];
+
     return (
         <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-white/20">
             <div className="w-full px-2 sm:px-4 lg:px-8">
                 <div className="flex justify-between items-center h-16 gap-2">
-                    {/* Logo */}
-                    <Link to="/" className="flex items-center gap-2 flex-shrink-0">
-                        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full overflow-hidden bg-white/50 flex transition-transform hover:scale-105">
-                            <img
-                                src="/logo.png"
-                                alt="Zoabi Family Kitchen"
-                                className="h-full w-full object-contain mix-blend-multiply"
-                            />
+                    {/* Logo & Dropdown Trigger */}
+                    <div className="relative flex items-center" ref={dropdownRef}>
+                        <div
+                            className="flex items-center gap-2 flex-shrink-0 cursor-pointer group"
+                            onClick={() => setIsLogoDropdownOpen(!isLogoDropdownOpen)}
+                        >
+                            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full overflow-hidden bg-white/50 flex transition-transform group-hover:scale-105 relative">
+                                <img
+                                    src="/logo.png"
+                                    alt="Zoabi Family Kitchen"
+                                    className="h-full w-full object-contain mix-blend-multiply"
+                                />
+                                <div className="lg:hidden absolute bottom-0 right-0 bg-white rounded-full shadow-sm p-0.5 border border-gray-100">
+                                    <ChevronDown size={10} className={clsx("transition-transform duration-300", isLogoDropdownOpen && "rotate-180")} />
+                                </div>
+                            </div>
+                            <div className="hidden md:flex flex-col items-start">
+                                <span className="font-bold text-base lg:text-xl tracking-tight text-gray-900 font-serif whitespace-nowrap">
+                                    Zoabi Family Kitchen
+                                </span>
+                                <div className="lg:hidden flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-primary-600 leading-none">
+                                    Menu <ChevronDown size={8} className={clsx("transition-transform duration-300", isLogoDropdownOpen && "rotate-180")} />
+                                </div>
+                            </div>
                         </div>
-                        <span className="font-bold text-base lg:text-xl tracking-tight text-gray-900 hidden md:block font-serif whitespace-nowrap">
-                            Zoabi Family Kitchen
-                        </span>
-                    </Link>
+
+                        {/* Logo Dropdown Menu */}
+                        <AnimatePresence>
+                            {isLogoDropdownOpen && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    className="absolute top-full left-0 mt-2 w-64 bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden lg:hidden"
+                                >
+                                    <div className="p-2">
+                                        {dropdownMenu.map((item, idx) => (
+                                            <Link
+                                                key={idx}
+                                                to={item.path}
+                                                onClick={() => setIsLogoDropdownOpen(false)}
+                                                className="flex items-center gap-3 p-3 rounded-2xl hover:bg-gray-50 transition-colors group"
+                                            >
+                                                <div className={clsx("p-2 rounded-xl transition-colors", item.bg, item.color)}>
+                                                    <item.icon size={18} strokeWidth={2.5} />
+                                                </div>
+                                                <span className="font-bold text-gray-700 group-hover:text-gray-900 transition-colors">
+                                                    {item.label}
+                                                </span>
+                                            </Link>
+                                        ))}
+                                    </div>
+                                    <div className="p-4 bg-gray-50 border-t border-gray-100">
+                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Navigation</p>
+                                        <div className="flex gap-4">
+                                            <Link to="/" onClick={() => setIsLogoDropdownOpen(false)} className="text-xs font-bold text-gray-600 hover:text-primary-600 transition-colors">Home</Link>
+                                            <Link to="/search" onClick={() => setIsLogoDropdownOpen(false)} className="text-xs font-bold text-gray-600 hover:text-primary-600 transition-colors">Recipes</Link>
+                                            <Link to="/planner" onClick={() => setIsLogoDropdownOpen(false)} className="text-xs font-bold text-gray-600 hover:text-primary-600 transition-colors">Planner</Link>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
 
                     {/* Desktop Links - hidden on small tablets */}
                     <div className="hidden lg:flex items-center gap-6 ml-4">

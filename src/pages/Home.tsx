@@ -75,12 +75,10 @@ const Index = () => {
                                 Find the perfect recipe for any occasion
                             </p>
                         </div>
-                        {/* <Button variant="ghost" asChild className="hidden md:flex">
-              <Link to="/categories">
-                View All
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button> */}
+                        <Link to="/categories" className={`${buttonVariants('outline')} hidden md:flex`}>
+                            Explore All
+                            <ArrowRight className="ml-2 h-4 w-4" />
+                        </Link>
                     </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
