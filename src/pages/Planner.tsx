@@ -11,8 +11,10 @@ import { Link } from 'react-router-dom';
 export default function Planner() {
     const [weekOffset, setWeekOffset] = useState(0); // 0 = current week, -1 = last week, +1 = next week
     const { addMultipleToCart } = useShoppingCart();
-    const { plannedMeals, dailyNotes, addRecipeToDate, addCustomMealToDate, removeRecipeFromDate, saveDailyNote } = useMealPlanner();
+    const { plannedMeals, dailyNotes, addRecipeToDate, addCustomMealToDate, removeRecipeFromDate, assignRecipeToMeal, saveDailyNote } = useMealPlanner();
     const { recipes, loading, error } = useRecipes();
+
+    const [assigningMealId, setAssigningMealId] = useState<number | string | null>(null);
 
     const today = new Date();
     const currentWeekStart = startOfWeek(addWeeks(today, weekOffset), { weekStartsOn: 1 });
@@ -34,6 +36,13 @@ export default function Planner() {
     };
     */
 
+    const closeSearch = () => {
+        setIsSearchOpen(false);
+        setSearchDate(null);
+        setAssigningMealId(null);
+        setSearchQuery('');
+    };
+
     const openSearch = (dateStr: string) => {
         setSearchDate(dateStr);
         setSearchQuery('');
@@ -41,10 +50,21 @@ export default function Planner() {
     };
 
     const handleSearchAdd = (recipe: Recipe) => {
-        if (searchDate) {
+        if (assigningMealId) {
+            assignRecipeToMeal(assigningMealId, recipe);
+            setAssigningMealId(null);
+            setIsSearchOpen(false);
+        } else if (searchDate) {
             addRecipeToDate(recipe, searchDate);
             setIsSearchOpen(false);
         }
+    };
+
+    const openSearchForAssign = (mealId: number | string) => {
+        setAssigningMealId(mealId);
+        setSearchDate(null);
+        setSearchQuery('');
+        setIsSearchOpen(true);
     };
 
     const filteredRecipes = recipes.filter(r =>
@@ -222,13 +242,26 @@ export default function Planner() {
                                                         <p className="font-bold text-xs text-gray-900 leading-tight line-clamp-2 px-1 mb-1">{meal.title}</p>
                                                     </Link>
                                                 ) : (
-                                                    <div className="block bg-primary-50 p-4 rounded-2xl shadow-sm border border-primary-100 hover:shadow-md hover:border-primary-200 transition-all border-dashed">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="w-8 h-8 rounded-lg bg-primary-100 flex items-center justify-center text-primary-600 flex-shrink-0">
-                                                                <CalendarIcon size={14} />
+                                                    <div className="flex items-center justify-between w-full pr-2">
+                                                        <Link
+                                                            to={`/create?title=${encodeURIComponent(meal.title)}`}
+                                                            className="flex-1 block bg-primary-50 p-4 rounded-2xl shadow-sm border border-primary-100 hover:shadow-md hover:border-primary-200 transition-all border-dashed cursor-pointer group/custom"
+                                                            title="Create recipe from this entry"
+                                                        >
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="w-8 h-8 rounded-lg bg-primary-100 flex items-center justify-center text-primary-600 flex-shrink-0 group-hover/custom:bg-primary-600 group-hover/custom:text-white transition-colors">
+                                                                    <Plus size={14} />
+                                                                </div>
+                                                                <p className="font-bold text-sm text-primary-900 leading-tight line-clamp-2">{meal.title}</p>
                                                             </div>
-                                                            <p className="font-bold text-sm text-primary-900 leading-tight line-clamp-2">{meal.title}</p>
-                                                        </div>
+                                                        </Link>
+                                                        <button
+                                                            onClick={() => openSearchForAssign(meal.id)}
+                                                            className="ml-2 p-2 text-primary-400 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-all"
+                                                            title="Assign an existing recipe"
+                                                        >
+                                                            <Search size={18} />
+                                                        </button>
                                                     </div>
                                                 )}
 
@@ -280,35 +313,41 @@ export default function Planner() {
             {/* Search Modal */}
             <AnimatePresence>
                 {isSearchOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-md">
+                    <div
+                        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-md cursor-pointer"
+                        onClick={closeSearch}
+                    >
                         <motion.div
                             initial={{ opacity: 0, y: 50, scale: 0.95 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 50, scale: 0.95 }}
-                            className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[85vh] border border-gray-100"
+                            onClick={(e) => e.stopPropagation()}
+                            className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[85vh] border border-gray-100 cursor-default"
                         >
                             <div className="p-8 border-b border-gray-50 flex items-center gap-6 bg-gray-50/50">
                                 <div className="w-14 h-14 rounded-2xl bg-primary-100 flex items-center justify-center text-primary-600 flex-shrink-0">
                                     <Search size={28} />
                                 </div>
                                 <div className="flex-1">
-                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary-600 mb-1">Add to Planner</p>
+                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary-600 mb-1">
+                                        {assigningMealId ? 'Replace Entry' : 'Add to Planner'}
+                                    </p>
                                     <input
                                         autoFocus
                                         type="text"
                                         className="w-full outline-none text-2xl font-bold placeholder-gray-300 bg-transparent"
-                                        placeholder="Search your kitchen..."
+                                        placeholder={assigningMealId ? "Search for replacement..." : "Search your kitchen..."}
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                     />
                                 </div>
-                                <button onClick={() => setIsSearchOpen(false)} className="w-12 h-12 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all">
+                                <button onClick={closeSearch} className="w-12 h-12 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all">
                                     <X size={28} />
                                 </button>
                             </div>
 
                             <div className="overflow-y-auto p-6 flex-1 custom-scrollbar">
-                                {searchQuery.trim().length > 0 && (
+                                {searchQuery.trim().length > 0 && !assigningMealId && (
                                     <button
                                         onClick={() => {
                                             if (searchDate) {

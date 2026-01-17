@@ -15,17 +15,20 @@ export default function CategoryCard({ category, index }: CategoryCardProps) {
             transition={{ duration: 0.5, delay: index * 0.1 }}
         >
             <Link to={`/category/${category.slug}`} className="block group">
-                <div className="bg-white rounded-2xl p-6 text-center shadow-sm border border-gray-100 transition-all duration-300 hover:shadow-md hover:border-primary-100 hover:-translate-y-1">
-                    <div className="w-16 h-16 mx-auto mb-4 bg-primary-50 rounded-full overflow-hidden flex items-center justify-center text-3xl group-hover:scale-110 transition-transform duration-300">
+                <div className="bg-white/80 backdrop-blur-md rounded-3xl p-6 text-center shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-white transition-all duration-500 hover:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.1)] hover:border-primary-200 hover:-translate-y-2">
+                    <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-primary-50 to-white rounded-2xl shadow-inner flex items-center justify-center text-4xl group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
                         {category.image_url ? (
-                            <img src={category.image_url} alt={category.name} className="w-full h-full object-cover" />
+                            <img src={category.image_url} alt={category.name} className="w-full h-full object-cover rounded-2xl" />
                         ) : (
                             getCategoryEmoji(category.slug)
                         )}
                     </div>
-                    <h3 className="font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
+                    <h3 className="font-bold text-gray-900 group-hover:text-primary-600 transition-colors tracking-tight">
                         {category.name}
                     </h3>
+                    <p className="text-[10px] text-gray-400 uppercase tracking-widest mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                        Explore Recipes
+                    </p>
                 </div>
             </Link>
         </motion.div>

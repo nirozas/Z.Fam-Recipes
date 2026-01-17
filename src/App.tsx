@@ -16,12 +16,14 @@ import Categories from './pages/Categories';
 import { ShoppingCartProvider } from './contexts/ShoppingCartContext';
 import { MealPlannerProvider } from './contexts/MealPlannerContext';
 
+import { Toaster } from 'react-hot-toast';
 import Search from './pages/Search';
 
 function App() {
     return (
         <ShoppingCartProvider>
             <MealPlannerProvider>
+                <Toaster position="top-center" />
                 <BrowserRouter>
                     <Routes>
                         <Route element={<Layout />}>

@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useShoppingCart, getCurrentWeekId } from '@/contexts/ShoppingCartContext';
 import { useFavorites, useLikes, useRecipeLikes } from '@/lib/hooks';
+import toast from 'react-hot-toast';
 
 interface RecipeCardProps {
     recipe: Recipe;
@@ -49,16 +50,23 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
                 weekId: currentWeekId,
             });
         });
-        alert(`All ingredients for ${recipe.title} added to cart!`);
+        toast.success(`Success! Items for "${recipe.title}" added to cart.`, {
+            icon: '🛒',
+            style: {
+                borderRadius: '12px',
+                background: '#333',
+                color: '#fff',
+            },
+        });
     };
 
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            whileHover={{ y: -5 }}
-            transition={{ duration: 0.3 }}
-            className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 relative"
+            whileHover={{ y: -8, scale: 1.02 }}
+            transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
+            className="group bg-white rounded-3xl overflow-hidden shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] hover:shadow-[0_20px_40px_-12px_rgba(233,84,84,0.2)] transition-all duration-500 border border-gray-100 relative"
         >
             <Link to={`/recipe/${recipe.id}`} className="block">
                 <div className="aspect-[3/2] overflow-hidden relative bg-gray-100 flex items-center justify-center">
@@ -66,53 +74,57 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
                         <img
                             src={recipe.image_url}
                             alt={recipe.title}
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                         />
                     ) : (
                         <span className="text-4xl text-gray-300">🍽️</span>
                     )}
-                    <div className="absolute top-3 left-3">
-                        <span className="px-3 py-1 bg-white/90 backdrop-blur-md rounded-full text-xs font-semibold text-primary-700 shadow-sm border border-primary-100">
+
+                    {/* Gradient Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                    <div className="absolute top-4 left-4 z-10">
+                        <span className="px-3 py-1.5 bg-white/95 backdrop-blur-md rounded-full text-[10px] font-bold uppercase tracking-wider text-primary-600 shadow-sm border border-white">
                             {recipe.category?.name || 'Recipe'}
                         </span>
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="absolute top-3 right-3 flex flex-col gap-2">
+                    <div className="absolute top-4 right-4 flex flex-col gap-2.5 z-10 translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-500">
                         <button
                             onClick={handleToggleLike}
-                            className={`p-2 rounded-full backdrop-blur-md transition-all duration-300 shadow-sm border ${isLiked
-                                ? 'bg-rose-500 text-white border-rose-400'
-                                : 'bg-white/90 text-gray-400 border-gray-100 hover:bg-white hover:text-rose-500'
+                            className={`p-2.5 rounded-full backdrop-blur-xl transition-all duration-300 shadow-xl border ${isLiked
+                                ? 'bg-rose-500 text-white border-rose-400 scale-110'
+                                : 'bg-white/90 text-gray-600 border-white hover:bg-white hover:text-rose-500'
                                 }`}
                             title={isLiked ? "Unlike" : "Like"}
                         >
-                            <Heart size={16} fill={isLiked ? "currentColor" : "none"} />
+                            <Heart size={18} fill={isLiked ? "currentColor" : "none"} className={isLiked ? "animate-pulse" : ""} />
                         </button>
                         <button
                             onClick={handleToggleFavorite}
-                            className={`p-2 rounded-full backdrop-blur-md transition-all duration-300 shadow-sm border ${isFavorited
-                                ? 'bg-amber-500 text-white border-amber-400'
-                                : 'bg-white/90 text-gray-400 border-gray-100 hover:bg-white hover:text-amber-500'
+                            className={`p-2.5 rounded-full backdrop-blur-xl transition-all duration-300 shadow-xl border ${isFavorited
+                                ? 'bg-amber-500 text-white border-amber-400 scale-110'
+                                : 'bg-white/90 text-gray-600 border-white hover:bg-white hover:text-amber-500'
                                 }`}
                             title={isFavorited ? "Remove from favorites" : "Favorite this recipe"}
                         >
-                            <Star size={16} fill={isFavorited ? "currentColor" : "none"} />
+                            <Star size={18} fill={isFavorited ? "currentColor" : "none"} />
                         </button>
                         <button
                             onClick={handleAddToCart}
-                            className={`p-2 rounded-full backdrop-blur-md transition-all duration-300 shadow-sm border ${isInCart
-                                ? 'bg-green-500 text-white border-green-400'
-                                : 'bg-white/90 text-gray-600 border-gray-100 hover:bg-white hover:text-primary-600'
+                            className={`p-2.5 rounded-full backdrop-blur-xl transition-all duration-300 shadow-xl border ${isInCart
+                                ? 'bg-green-500 text-white border-green-400 scale-110'
+                                : 'bg-white/90 text-gray-600 border-white hover:bg-white hover:text-primary-600'
                                 }`}
                             title={isInCart ? "Already in cart" : "Add all ingredients to cart"}
                         >
-                            <ShoppingCart size={16} />
+                            <ShoppingCart size={18} />
                         </button>
                     </div>
                 </div>
 
-                <div className="p-4">
+                <div className="p-5">
                     <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-3">
                             <div className="flex items-center gap-1 text-yellow-500">

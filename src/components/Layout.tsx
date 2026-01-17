@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import Navbar from './Navbar';
 import MobileNav from './MobileNav';
+import toast from 'react-hot-toast';
 
 export default function Layout() {
     const navigate = useNavigate();
@@ -29,7 +30,7 @@ export default function Layout() {
 
                 if (profile && !profile.is_approved) {
                     await supabase.auth.signOut();
-                    alert('Your account is pending admin approval.');
+                    toast.error('Your account is pending admin approval.');
                     navigate('/auth');
                 }
             }

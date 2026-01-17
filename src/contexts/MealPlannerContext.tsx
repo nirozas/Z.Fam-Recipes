@@ -8,6 +8,7 @@ interface MealPlannerContextType {
     addRecipeToDate: (recipe: Recipe, dateStr: string) => void;
     addCustomMealToDate: (title: string, dateStr: string) => void;
     removeRecipeFromDate: (dateStr: string, index: number) => void;
+    assignRecipeToMeal: (mealId: number | string, recipe: Recipe) => Promise<void>;
     saveDailyNote: (dateStr: string, note: string) => Promise<void>;
     loading: boolean;
 }
@@ -197,6 +198,43 @@ export const MealPlannerProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
+    const assignRecipeToMeal = async (mealId: number | string, recipe: Recipe) => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        // Optimistic update
+        setPlannedMeals(prev => {
+            const next = { ...prev };
+            for (const date in next) {
+                const idx = next[date].findIndex(m => m.id === mealId);
+                if (idx !== -1) {
+                    next[date] = [...next[date]];
+                    next[date][idx] = {
+                        id: recipe.id,
+                        title: recipe.title,
+                        image_url: recipe.image_url || undefined,
+                        recipe: recipe
+                    };
+                    break;
+                }
+            }
+            return next;
+        });
+
+        // Update DB
+        const { error } = await supabase
+            .from('meal_planner')
+            .update({
+                recipe_id: recipe.id,
+                custom_title: null
+            })
+            .eq('id', mealId);
+
+        if (error) {
+            console.error('Error assigning recipe to meal:', error);
+        }
+    };
+
     const saveDailyNote = async (dateStr: string, note: string) => {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
@@ -220,7 +258,7 @@ export const MealPlannerProvider = ({ children }: { children: ReactNode }) => {
     };
 
     return (
-        <MealPlannerContext.Provider value={{ plannedMeals, dailyNotes, addRecipeToDate, addCustomMealToDate, removeRecipeFromDate, saveDailyNote, loading }}>
+        <MealPlannerContext.Provider value={{ plannedMeals, dailyNotes, addRecipeToDate, addCustomMealToDate, removeRecipeFromDate, assignRecipeToMeal, saveDailyNote, loading }}>
             {children}
         </MealPlannerContext.Provider>
     );

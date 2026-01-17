@@ -5,6 +5,10 @@ import { ArrowRight, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { HeroSection } from '@/components/HeroSection';
 import { useRecipes, useCategories } from '@/lib/hooks';
+import RecipeCardSkeleton from '@/components/RecipeCardSkeleton';
+import CategoryCardSkeleton from '@/components/CategoryCardSkeleton';
+import { useEffect } from 'react';
+import toast from 'react-hot-toast';
 
 /* Button Styles Helper */
 const buttonVariants = (variant: 'hero' | 'outline' | 'ghost' | 'secondary', size: 'lg' | 'default' = 'default') => {
@@ -26,37 +30,22 @@ const Index = () => {
     const { recipes, loading: recipesLoading, error: recipesError } = useRecipes();
     const { categories, loading: categoriesLoading, error: categoriesError } = useCategories();
 
+    useEffect(() => {
+        if (recipesError) {
+            toast.error(`Recipes: ${recipesError}`, { id: 'recipes-error' });
+        }
+    }, [recipesError]);
+
+    useEffect(() => {
+        if (categoriesError) {
+            toast.error(`Categories: ${categoriesError}`, { id: 'categories-error' });
+        }
+    }, [categoriesError]);
+
+
     // Use all recipes for now, or filter if we had "featured" flag
     const featuredRecipes = recipes.slice(0, 3);
-    const popularRecipes = recipes.slice(3, 6);
-
-    if (recipesLoading || categoriesLoading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Loading recipes...</p>
-                </div>
-            </div>
-        );
-    }
-
-    if (recipesError || categoriesError) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="text-center max-w-md">
-                    <h2 className="text-2xl font-bold text-red-600 mb-4">Error Loading Data</h2>
-                    <p className="text-gray-700 mb-2">{recipesError || categoriesError}</p>
-                    <button
-                        onClick={() => window.location.reload()}
-                        className="mt-4 px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
-                    >
-                        Retry
-                    </button>
-                </div>
-            </div>
-        );
-    }
+    const popularRecipes = recipes.slice(3, 9);
 
     return (
         <div className="min-h-screen bg-gray-50/50">
@@ -82,9 +71,15 @@ const Index = () => {
                     </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                        {categories.map((category, index) => (
-                            <CategoryCard key={category.id} category={category} index={index} />
-                        ))}
+                        {categoriesLoading ? (
+                            Array.from({ length: 4 }).map((_, i) => (
+                                <CategoryCardSkeleton key={i} />
+                            ))
+                        ) : (
+                            categories.map((category, index) => (
+                                <CategoryCard key={category.id} category={category} index={index} />
+                            ))
+                        )}
                     </div>
                 </div>
             </section>
@@ -104,9 +99,15 @@ const Index = () => {
                     </div>
 
                     <div className="grid grid-cols-3 lg:grid-cols-3 xl:grid-cols-6 gap-2 sm:gap-6">
-                        {featuredRecipes.map((recipe) => (
-                            <RecipeCard key={recipe.id} recipe={recipe} />
-                        ))}
+                        {recipesLoading ? (
+                            Array.from({ length: 6 }).map((_, i) => (
+                                <RecipeCardSkeleton key={i} />
+                            ))
+                        ) : (
+                            featuredRecipes.map((recipe) => (
+                                <RecipeCard key={recipe.id} recipe={recipe} />
+                            ))
+                        )}
                     </div>
                 </div>
             </section>
@@ -130,9 +131,15 @@ const Index = () => {
                     </div>
 
                     <div className="grid grid-cols-3 lg:grid-cols-3 xl:grid-cols-6 gap-2 sm:gap-6">
-                        {popularRecipes.map((recipe) => (
-                            <RecipeCard key={recipe.id} recipe={recipe} />
-                        ))}
+                        {recipesLoading ? (
+                            Array.from({ length: 6 }).map((_, i) => (
+                                <RecipeCardSkeleton key={i} />
+                            ))
+                        ) : (
+                            popularRecipes.map((recipe) => (
+                                <RecipeCard key={recipe.id} recipe={recipe} />
+                            ))
+                        )}
                     </div>
 
                     <div className="mt-8 text-center md:hidden">

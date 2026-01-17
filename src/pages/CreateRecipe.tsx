@@ -192,13 +192,20 @@ export default function CreateRecipe() {
     });
   }, [navigate]);
 
-  // Pre-fill category from URL parameter
+  // Pre-fill category or title from URL parameter
   useEffect(() => {
-    const categoryParam = searchParams.get('category');
-    if (categoryParam && !isEditing) {
-      const categoryId = parseInt(categoryParam, 10);
-      if (!isNaN(categoryId)) {
-        setFormData(prev => ({ ...prev, category_id: categoryId }));
+    if (!isEditing) {
+      const categoryParam = searchParams.get('category');
+      if (categoryParam) {
+        const categoryId = parseInt(categoryParam, 10);
+        if (!isNaN(categoryId)) {
+          setFormData(prev => ({ ...prev, category_id: categoryId }));
+        }
+      }
+
+      const titleParam = searchParams.get('title');
+      if (titleParam) {
+        setFormData(prev => ({ ...prev, title: titleParam }));
       }
     }
   }, [searchParams, isEditing]);
